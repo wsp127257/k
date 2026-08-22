@@ -1,0 +1,30 @@
+name: Cloud Sign APK
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  sign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Download uber-apk-signer (supports v1/v2/v3)
+        run: wget -q https://github.com/patrickfav/uber-apk-signer/releases/download/v1.3.0/uber-apk-signer-1.3.0.jar
+
+      - name: Align + sign all APK files at repo root
+        run: java -jar uber-apk-signer-1.3.0.jar --apks "*.apk" --out signed --allowResign
+
+      - name: Upload signed APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-apk
+          path: signed/*.apk
